@@ -67,6 +67,7 @@ void CHooksManager::SetPathes(bool Set)
 {
 	DisableCamera3rdPersonProcess(Set);
 	PatchCrossHair(Set);
+	DisableClassicAxis(Set);
 	ChangeCode(Set);
 }
 
@@ -100,9 +101,9 @@ void CHooksManager::PatchCrossHair(bool Set)
 void CHooksManager::ChangeColl(bool Set)
 {
 	if (Set)
-		CBodySystem::ExtendCol(CBodySystem::GetCollSphereRadius() * 1.8f);
+		CBodySystem::ExtendCol(CBodySystem::GetCollSphereRadius() * 1.6f);
 	else
-		CBodySystem::ExtendCol(CBodySystem::GetCollSphereRadius() / 1.8f);
+		CBodySystem::ExtendCol(CBodySystem::GetCollSphereRadius() / 1.6f);
 }
 
 void CHooksManager::DisableCamera3rdPersonProcess(bool Set)
@@ -119,6 +120,69 @@ void CHooksManager::DisableCamera3rdPersonProcess(bool Set)
 	}
 }
 
+void CHooksManager::DisableClassicAxis(bool Set)
+{
+	if (!IsGameVersion10en()) return;
+
+	// Player movements.
+	int m_dwAddress0[] = { 0x4F2685,
+							0x469292,
+							0x4C7673,
+							0x4F03D5,
+							0x4D76CE,
+							0x45DB98
+	};
+	static int OrigAddress0 = 0x4F2685 + 0x5 + patch::GetInt(0x4F2685 + 0x1);
+
+	// Shooting direction.
+	int m_dwAddress1[] = { 0x4E6562,
+							0x55D88B,
+							0x560C25
+	};
+	static int OrigAddress1 = 0x4E6562 + 0x5 + patch::GetInt(0x4E6562 + 0x1);
+	static int OrigAddress2 = 0x46D500 + 0x5 + patch::GetInt(0x46D500 + 0x1);
+	static int OrigAddress3 = 0x505EA9 + 0x5 + patch::GetInt(0x505EA9 + 0x1);
+
+	if (Set)
+	{
+		// CamControl
+		patch::RedirectCall(0x46D500, (void*)0x468250);
+
+		for (int i = 0; i < 6; i++)
+			patch::RedirectCall(m_dwAddress0[i], (void*)0x457460);
+
+		for (int i = 0; i < 3; i++)
+			patch::RedirectCall(m_dwAddress1[i], (void*)0x457460);
+
+		// Crosshair 
+		patch::Set<BYTE>(0x50554C + 1, 0xFF);
+		patch::Set<BYTE>(0x505627 + 1, 0xFF);
+		patch::RedirectCall(0x505EA9, (void*)0x501D90);
+
+		patch::Set<BYTE>(0x468D09, 0x75);
+		patch::Set<BYTE>(0x468D92, 0x75);
+
+		// Jump
+		patch::Set<BYTE>(0x4D73DC, 0x74);
+	}
+	else
+	{
+		// CamControl
+		patch::RedirectCall(0x46D500, (void*)OrigAddress2);
+
+		for (int i = 0; i < 6; i++)
+			patch::RedirectCall(m_dwAddress0[i], (void*)OrigAddress0);
+
+		for (int i = 0; i < 3; i++)
+			patch::RedirectCall(m_dwAddress1[i], (void*)OrigAddress1);
+
+		// Crosshair 
+		patch::Set<BYTE>(0x50554C + 1, 0);
+		patch::Set<BYTE>(0x505627 + 1, 0);
+		patch::RedirectCall(0x505EA9, (void*)OrigAddress3);
+	}
+}
+
 void CHooksManager::ChangeCode(bool Set)
 {
 	static float CrossX, CrossY;
@@ -129,6 +193,9 @@ void CHooksManager::ChangeCode(bool Set)
 		//Free Camera Matrix
 		patch::RedirectJump(by_version<0x46E715, 0x46E6F5>(), (void*)by_version<0x46E786, 0x46E766>());
 		patch::RedirectJump(by_version<0x46E809, 0x46E7E9>(), (void*)by_version<0x46E920, 0x46E900>());
+
+		//Free fixed camera
+		patch::RedirectJump(0x459BFA, (void*)0x459D2A);
 
 		//LookBehind
 		patch::Nop(by_version<0x493329, 0x4933E9>(), 2);\
@@ -185,6 +252,13 @@ void CHooksManager::ChangeCode(bool Set)
 		patch::SetUChar(by_version<0x46E80B, 0x46E7EB>(), 0xC0);
 		patch::SetUChar(by_version<0x46E80C, 0x46E7EC>(), 0xD9);
 		patch::SetUChar(by_version<0x46E80D, 0x46E7ED>(), 0x44);
+
+		//Fixed camera
+		patch::SetUChar(0x459BFA, 0x8D);
+		patch::SetUChar(0x459BFB, 0x44);
+		patch::SetUChar(0x459BFC, 0x24);
+		patch::SetUChar(0x459BFD, 0x18);
+		patch::SetUChar(0x459BFE, 0x89);
 
 		//LookBehind
 		patch::SetUChar(by_version<0x493329, 0x4933E9>(), 0x74);

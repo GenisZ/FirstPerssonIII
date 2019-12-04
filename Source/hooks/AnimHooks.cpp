@@ -7,6 +7,7 @@
 #include "CWeaponInfo.h"
 #include "eAnimations.h"
 #include "plugin.h"
+#include <fstream>
 
 using namespace plugin;
 
@@ -385,4 +386,29 @@ void AnimHooks::InitWeaponsAnimsSettings()
 	WeaponsAnimsSet[WEAPONTYPE_DETONATOR].StartLoop = 0.0f;
 	WeaponsAnimsSet[WEAPONTYPE_DETONATOR].FireFrame = 12 * (0.1f / 3.0f);
 	WeaponsAnimsSet[WEAPONTYPE_DETONATOR].EndLoop = 20 * (0.1f / 3.0f);
+
+	std::ifstream wdat("fp_weapons.dat");
+
+	if (wdat)
+	{
+		std::string buff; int val[3];
+
+		while (true)
+		{
+			wdat >> buff;
+			if (buff[0] == '#') std::getline(wdat, buff);
+			else break;
+		}
+		
+		for (int i : {0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12})
+		{
+			wdat >> val[0] >> val[1] >> val[2];
+			WeaponsAnimsSet[i].StartLoop = val[0] * (0.1f / 3.0f);
+			WeaponsAnimsSet[i].FireFrame = val[2] * (0.1f / 3.0f);
+			WeaponsAnimsSet[i].EndLoop = val[1] * (0.1f / 3.0f);
+			wdat >> buff;
+		}
+
+		wdat.close();
+	}
 }

@@ -9,6 +9,7 @@ public:
 	static void InjectGUI();
 	static void DisableCamera3rdPersonProcess(bool Set);
 	static void ChangeCode(bool Set);
+	static void DisableClassicAxis(bool Set);
 	static void PatchCrossHair(bool Set);
 	static void ChangeColl(bool Set);
 };
