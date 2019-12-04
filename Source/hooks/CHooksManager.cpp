@@ -126,18 +126,18 @@ void CHooksManager::DisableClassicAxis(bool Set)
 
 	// Player movements.
 	int m_dwAddress0[] = { 0x4F2685,
-							0x469292,
-							0x4C7673,
-							0x4F03D5,
-							0x4D76CE,
-							0x45DB98
+				0x469292,
+				0x4C7673,
+				0x4F03D5,
+				0x4D76CE,
+				0x45DB98
 	};
 	static int OrigAddress0 = 0x4F2685 + 0x5 + patch::GetInt(0x4F2685 + 0x1);
 
 	// Shooting direction.
 	int m_dwAddress1[] = { 0x4E6562,
-							0x55D88B,
-							0x560C25
+				0x55D88B,
+				0x560C25
 	};
 	static int OrigAddress1 = 0x4E6562 + 0x5 + patch::GetInt(0x4E6562 + 0x1);
 	static int OrigAddress2 = 0x46D500 + 0x5 + patch::GetInt(0x46D500 + 0x1);
